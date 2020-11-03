@@ -7,9 +7,7 @@ The framework is split into modules and does not bloat the codebase so that you 
 
 It uses GRPC + Protobuf + NATS + Kubenetes + Skaffold + Echo
 
-It comes with a generator project to get you started very quickly.
-
-It is a Yeoman Generator and you can find it [here](https://www.npmjs.com/package/generator-go-ego)
+##### It comes with a project generator to get you started very quickly. It is a Yeoman Generator and you can find it [here](https://www.npmjs.com/package/generator-go-ego)
 
 ```
 go get -u github.com/adityak368/ego/<modulename>@main
