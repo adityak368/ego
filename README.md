@@ -5,12 +5,14 @@
 Although being an opinionated framework, it still highly extensible and allows you to plug in your own implementations for various components. The framework is heavily inspired by go-micro.
 The framework is split into modules and does not bloat the codebase so that you import only the minimal required components for your microservice.
 
-It comes with a generator project to get you started very quickly.
 It uses GRPC + Protobuf + NATS + Kubenetes + Skaffold + Echo
+
+It comes with a generator project to get you started very quickly.
+
+It is a Yeoman Generator and you can find it [here](https://www.npmjs.com/package/generator-go-ego)
 
 ```
 go get -u github.com/adityak368/ego/<modulename>@main
-
 ```
 
 ### Broker
