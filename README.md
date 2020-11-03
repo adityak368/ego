@@ -24,27 +24,27 @@ go get -u github.com/adityak368/ego/<modulename>@main
         "github.com/adityak368/ego/broker"
         "github.com/adityak368/ego/broker/nats"
         // Replace with your own protobuf message
-	    "github.com/adityak368/ego/test/email"
+        "github.com/adityak368/ego/test/email"
     )
 
     bkr := nats.New()
-	err = bkr.Init(broker.Options{
-		Name: "Nats",
-		Host: "localhost",
-		Port: 4222,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = bkr.Connect()
-	if err != nil {
-		log.Fatal(err)
-	}
+    err = bkr.Init(broker.Options{
+        Name: "Nats",
+        Host: "localhost",
+        Port: 4222,
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+    err = bkr.Connect()
+    if err != nil {
+        log.Fatal(err)
+    }
 
     // Publish the message to the broker
-	bkr.Publish("sendEmail", &email.SendEmailRequest{
-		Subject: "abcd@example.com",
-	})
+    bkr.Publish("sendEmail", &email.SendEmailRequest{
+        Subject: "abcd@example.com",
+    })
 
 ```
 
@@ -90,8 +90,7 @@ go get -u github.com/adityak368/ego/<modulename>@main
     import (
         "sampleservice/config"
         // service protobuf definition
-	    "sampleservice/proto/sampleservice"
-
+        "sampleservice/proto/sampleservice"
 
         "github.com/adityak368/ego/server"
         grpcServer "github.com/adityak368/ego/server/grpc"
@@ -104,23 +103,23 @@ go get -u github.com/adityak368/ego/<modulename>@main
     }
 
     // Create and start a new grpc server
-	srv := grpcServer.New(
-	// grpc.UnaryInterceptor(otgrpc.OpenTracingServerInterceptor(tracer)),
-	// grpc.StreamInterceptor(otgrpc.OpenTracingStreamServerInterceptor(tracer)),
-	)
-	srv.Init(server.Options{
-		Name:     config.AppName,
-		Address:  config.AddressMicroservice,
-		Registry: mdns.New("ego", "local"),
-		Version:  "1.0.0",
-	})
+    srv := grpcServer.New(
+    // grpc.UnaryInterceptor(otgrpc.OpenTracingServerInterceptor(tracer)),
+    // grpc.StreamInterceptor(otgrpc.OpenTracingStreamServerInterceptor(tracer)),
+    )
+    srv.Init(server.Options{
+        Name:     config.AppName,
+        Address:  config.AddressMicroservice,
+        Registry: mdns.New("ego", "local"),
+        Version:  "1.0.0",
+    })
 
-	grpcHandle := srv.Handle().(*grpc.Server)
-	handler := sampleservice.SampleServiceService{
-		CreateUser: CreateUser,
-	}
+    grpcHandle := srv.Handle().(*grpc.Server)
+    handler := sampleservice.SampleServiceService{
+        CreateUser: CreateUser,
+    }
 
-	// Register the protobuf service with the grpc server
+    // Register the protobuf service with the grpc server
     sampleservice.RegisterSampleServiceService(grpcHandle, &handler)
 
 ```
