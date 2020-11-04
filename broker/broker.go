@@ -9,7 +9,7 @@ import (
 type Subscriber interface {
 	// Topic returns the subscribed topic
 	Topic() string
-	// Unsubscribe unsibscribes to the topic
+	// Unsubscribe unsubscribes to the topic
 	Unsubscribe() error
 }
 
@@ -30,8 +30,10 @@ type Broker interface {
 	// Publish publishes raw data to the topic
 	PublishRaw(topic string, m []byte) error
 	// Subscribe subscribes a handler to the topic
-	Subscribe(topic string, m interface{}) (Subscriber, error)
-	// Handle returns the raw connection handle to the db
+	Subscribe(topic string, h interface{}) (Subscriber, error)
+	// SubscribeRaw subscribes a raw handler to the topic
+	SubscribeRaw(topic string, h func(data []byte) error) (Subscriber, error)
+	// Handle returns the raw connection handle to the broker
 	Handle() interface{}
 	// String returns the description of the broker
 	String() string

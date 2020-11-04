@@ -145,6 +145,30 @@ func (n *natsBroker) Subscribe(topic string, h interface{}) (broker.Subscriber, 
 	return subscriber, nil
 }
 
+// SubscribeRaw subscribes a raw handler to the topic
+func (n *natsBroker) SubscribeRaw(topic string, cb func(data []byte) error) (broker.Subscriber, error) {
+
+	if n.connection == nil {
+		return nil, errors.New("[NATS]: Cannot Subscribe. Not connected to broker")
+	}
+
+	subscription, err := n.connection.Subscribe(topic, func(m *nats.Msg) {
+		cb(m.Data)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	subscriber := &natsSubscriber{
+		topic:        topic,
+		subscription: subscription,
+	}
+
+	n.subscriptionMap[topic] = subscriber
+	log.Printf("[NATS]: Subscribed to topic '%s'", topic)
+	return subscriber, nil
+}
+
 // New returns a new natsBroker broker
 func New() broker.Broker {
 	return &natsBroker{

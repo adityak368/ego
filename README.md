@@ -2,50 +2,89 @@
 
 ### EGO Framework is a minimalistic opinionated framework for developing microservices in GO.
 
-Although being an opinionated framework, it still highly extensible and allows you to plug in your own implementations for various components. The framework is heavily inspired by go-micro.
+Although being an opinionated framework, it is still highly extensible and allows you to plug in your own implementations for various components. The framework is heavily inspired by go-micro.
 The framework is split into modules and does not bloat the codebase so that you import only the minimal required components for your microservice.
 
-It uses GRPC + Protobuf + NATS + Kubenetes + Skaffold + Echo
+[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/adityak368/ego) [![Go Report Card](https://goreportcard.com/badge/github.com/adityak368/ego)](https://goreportcard.com/report/github.com/adityak368/ego)
 
 ##### It comes with a project generator to get you started very quickly. It is a Yeoman Generator and you can find it [here](https://www.npmjs.com/package/generator-go-ego)
 
-```
-go get -u github.com/adityak368/ego/<modulename>@main
-```
+The Generator uses GRPC + Protobuf + NATS + Kubernetes + Skaffold + Echo + Nginx
+
+#### Features
+
+- Automatic containerization of services and deployment using kubernetes
+- Auto reload on code change
+- Clearly defined interfaces for services using protobuf
 
 ### Broker
 
-- Defines the broker interface. Default implementation is NATS
+- Defines the broker interface.
+- NATS is supported and used by default
 - Broker uses protobuf message encoding
 
 ```go
 
     import (
+        "log"
         "github.com/adityak368/ego/broker"
         "github.com/adityak368/ego/broker/nats"
-        // Replace with your own protobuf message
-        "github.com/adityak368/ego/test/email"
+        // Replace this with your own protobuf message
+        "email/proto/email"
     )
 
     bkr := nats.New()
-    err = bkr.Init(broker.Options{
+    bkr.Init(broker.Options{
         Name: "Nats",
-        Host: "localhost",
-        Port: 4222,
+		Address: "localhost:4222",
     })
-    if err != nil {
-        log.Fatal(err)
-    }
-    err = bkr.Connect()
+
+    err := bkr.Connect()
     if err != nil {
         log.Fatal(err)
     }
 
-    // Publish the message to the broker
-    bkr.Publish("sendEmail", &email.SendEmailRequest{
+    // SendEmailRequest is a protobuf message
+    func OnEmail(msg *email.SendEmailRequest) error {
+        // Handle new email request
+        return nil
+    }
+
+    func OnUserCreatedRaw(msg []byte) error {
+        // Handle new user creation
+        return nil
+    }
+
+    emailsubscription, err := bkr.Subscribe("email.SendEmail", OnEmail)
+	if err != nil {
+        log.Fatal(err)
+    }
+
+    usersubscription, err := bkr.SubscribeRaw("user.UserCreated", OnUserCreatedRaw)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // Publish the protobuf message to the broker
+    bkr.Publish("email.SendEmail", &email.SendEmailRequest{
         Subject: "abcd@example.com",
     })
 
+    // Publish raw message to the broker
+    bkr.PublishRaw("user.UserCreated", []byte("Data"))
+
+```
+
+```
+syntax = "proto3";
+
+package email;
+
+message SendEmailRequest {
+	string To = 1;
+	string Subject = 2;
+	string Body = 3;
+}
 ```
 
 ### Registry
@@ -55,6 +94,7 @@ go get -u github.com/adityak368/ego/<modulename>@main
 ```go
 
     import (
+        "log"
         "github.com/adityak368/ego/registry"
         "github.com/adityak368/ego/registry/mdns"
     )
@@ -67,9 +107,9 @@ go get -u github.com/adityak368/ego/<modulename>@main
     reg.Init(registry.Options{})
 
     reg.Register(registry.Entry{
-        Name:   serviceName,
-        Address: "localhost:1212",
-        Version: "1.0.0",
+        Name:   serviceName, // Name of the service to register
+        Address: "localhost:1212", // Address of the service to register
+        Version: "1.0.0",  // Version of the service to register
     })
     err := reg.Watch()
     if err != nil {
@@ -82,61 +122,84 @@ go get -u github.com/adityak368/ego/<modulename>@main
 
 ### Server
 
-- Defines the Server interface which serves RPC from other microservices
-- GRPC is supported
+- Defines the Server interface which serves RPC requests from other microservices
+- GRPC is supported and used by default
 
 ```go
 
     import (
-        "sampleservice/config"
-        // service protobuf definition
-        "sampleservice/proto/sampleservice"
+        "log"
+        // replace with your own service protobuf definition
+        "myawesomeapp/proto/myawesomeapp"
 
+        "github.com/adityak368/ego/registry/mdns"
         "github.com/adityak368/ego/server"
         grpcServer "github.com/adityak368/ego/server/grpc"
     )
 
-    func CreateUser(ctx context.Context, req *sampleservice.CreateUserRequest) (*sampleservice.CreateUserResponse, error) {
-        return &sampleservice.CreateUserResponse{
+    func CreateUser(ctx context.Context, req *myawesomeapp.CreateUserRequest) (*myawesomeapp.CreateUserResponse, error) {
+        return &myawesomeapp.CreateUserResponse{
             Success: true,
         }, nil
     }
 
     // Create and start a new grpc server
-    srv := grpcServer.New(
-    // grpc.UnaryInterceptor(otgrpc.OpenTracingServerInterceptor(tracer)),
-    // grpc.StreamInterceptor(otgrpc.OpenTracingStreamServerInterceptor(tracer)),
-    )
+    srv := grpcServer.New()
     srv.Init(server.Options{
-        Name:     config.AppName,
-        Address:  config.AddressMicroservice,
-        Registry: mdns.New("ego", "local"),
+        Name:     "MyAwesomeApp",
+        Address:  "localhost:4003",
+        Registry: mdns.New("ego", "local"), // Set registry to mdns for automatic service discovery
         Version:  "1.0.0",
     })
 
     grpcHandle := srv.Handle().(*grpc.Server)
-    handler := sampleservice.SampleServiceService{
-        CreateUser: CreateUser,
-    }
 
     // Register the protobuf service with the grpc server
-    sampleservice.RegisterSampleServiceService(grpcHandle, &handler)
+    myawesomeapp.RegisterMyAwesomeAppService(grpcHandle, &myawesomeapp.MyAwesomeAppService{
+        CreateUser: CreateUser,
+    })
 
+```
+
+```
+syntax = "proto3";
+
+package myawesomeapp;
+
+service MyAwesomeApp {
+	rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+}
+
+message CreateUserRequest {
+	string Name = 1;
+	string Details = 2;
+}
+
+message CreateUserResponse {
+	bool success = 1;
+}
+
+message UserCreated {
+	string Name = 1;
+	string Details = 2;
+}
 ```
 
 ### Client
 
 - Defines the Client interface which makes a RPC
-- GRPC is supported
+- GRPC is supported and used by default
 
 ```go
 
     import (
-        // the protobuf service interface
+        "log"
+        // replace with your own service protobuf definition
         "anotherservice/proto/anotherservice"
 
         "github.com/adityak368/ego/client"
         grpcClient "github.com/adityak368/ego/client/grpc"
+        "github.com/adityak368/mdnsresolver"
         "google.golang.org/grpc"
     )
 
@@ -148,8 +211,8 @@ go get -u github.com/adityak368/ego/<modulename>@main
 
     // Initialize the client
     anotherServiceClient.Init(client.Options{
-        Name:   "AnotherService",
-        Target: "dns://AnotherService.local",
+        Name:   "AnotherServiceClient", // Initialize the client by giving it a name
+        Target: "mdns://ego/AnotherService.local", // Set service discovery mechanism. MDNS is used here
     })
 
     // Connect the client to server
@@ -162,8 +225,28 @@ go get -u github.com/adityak368/ego/<modulename>@main
     anotherServiceClient = anotherservice.NewAnotherServiceClient(conn)
 
     // Do RPC Calls
-    // anotherServiceClient.SendEmail()
+    // anotherServiceClient.SendEmail(...)
 
+```
+
+```
+syntax = "proto3";
+
+package anotherservice;
+
+service AnotherService {
+	rpc SendEmail(SendEmailRequest) returns (SendEmailResponse) {}
+}
+
+message SendEmailRequest {
+	string To = 1;
+	string Subject = 2;
+	string Body = 3;
+}
+
+message SendEmailResponse {
+	bool success = 1;
+}
 ```
 
 ### DB
@@ -174,12 +257,9 @@ go get -u github.com/adityak368/ego/<modulename>@main
 ```go
 
     import (
-        "sampleservice/config"
-        "db/models"
-
+        "log"
         "github.com/adityak368/ego/db"
         "github.com/adityak368/ego/db/mongodb"
-        "github.com/adityak368/swissknife/logger"
     )
 
     // MongoDB exports the mongodb handle
@@ -187,15 +267,15 @@ go get -u github.com/adityak368/ego/<modulename>@main
     MongoDB := mongodb.New()
     MongoDB.Init(db.Options{
         Name:     "Mongodb",
-        Address:  config.MongoDBUrl,
-        Database: config.DbName,
+        Address:  "localhost:27017",
+        Database: "MyDatabase",
     })
     err := MongoDB.Connect()
     if err != nil {
         log.Fatal(err)
     }
 
-    userModel := models.UserModel()
+    userModel := UserModel()
     userModel.CreateIndexes(MongoDB)
     userModel.PrintIndexes(MongoDB)
 
@@ -207,12 +287,10 @@ The User Model
 
 ```go
 
-    package models
-
     import (
         "context"
-        "sampleservice/config"
         "time"
+        "log"
 
         "github.com/adityak368/ego/db"
         "github.com/adityak368/ego/db/mongodb"
@@ -232,7 +310,7 @@ The User Model
     // CreateIndexes creates the indexes for a model
     func (u *User) CreateIndexes(db db.Database) error {
         c := db.Handle().(*mongo.Database).Collection(u.String())
-        opts := options.CreateIndexes().SetMaxTime(time.Duration(config.DbTimeout) * time.Second)
+        opts := options.CreateIndexes().SetMaxTime(10 * time.Second)
 
         keys := bson.D{{"name", 1}}
         index := mongo.IndexModel{}
