@@ -117,12 +117,17 @@ func (m *DB) PrintIndexes(collection string) {
 		return
 	}
 
+	if m.connection == nil {
+		log.Println("[DB]: Cannot print indexes. Not a valid database")
+		return
+	}
+
 	c := m.connection.Collection(collection)
 	duration := 10 * time.Second
 	batchSize := int32(10)
 	cur, err := c.Indexes().List(context.Background(), &options.ListIndexesOptions{BatchSize: &batchSize, MaxTime: &duration})
 	if err != nil {
-		log.Println("[DB]: Something went wrong listing ", err)
+		log.Println("[DB]: Something went wrong listing indexes", err)
 	}
 	for cur.Next(context.Background()) {
 		index := bson.D{}

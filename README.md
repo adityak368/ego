@@ -9,9 +9,7 @@ The framework is split into modules and does not bloat the codebase so that you 
 
 ##### It comes with a project generator to get you started very quickly. It is a Yeoman Generator and you can find it [here](https://www.npmjs.com/package/generator-go-ego)
 
-The Generator uses GRPC + Protobuf + NATS + Kubernetes + Skaffold + Echo + Nginx
-
-#### Features
+The Generator uses GRPC + Protobuf + NATS + Kubernetes + Skaffold + Echo + Nginx and supports
 
 - Automatic containerization of services and deployment using kubernetes
 - Auto reload on code change
