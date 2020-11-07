@@ -3,9 +3,9 @@ package grpc
 import (
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/adityak368/ego/client"
+	"github.com/adityak368/swissknife/logger"
 	"google.golang.org/grpc"
 )
 
@@ -47,7 +47,7 @@ func (g *grpcClient) Connect() error {
 		return err
 	}
 
-	log.Printf("[GRPC-Client]: Connecting to %s on %s", g.options.Name, g.options.Target)
+	logger.Infof("[GRPC-Client]: Connecting to %s on %s", g.options.Name, g.options.Target)
 	g.conn = conn
 	return nil
 }

@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/adityak368/ego/db"
+	"github.com/adityak368/swissknife/logger"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -73,7 +73,7 @@ func (m *DB) Connect(handlers ...db.Handler) error {
 		}
 	}
 
-	log.Println(m)
+	logger.Info(m)
 
 	return nil
 }
@@ -113,12 +113,12 @@ func (m *DB) Handle() interface{} {
 // PrintIndexes prints all the indexes in the db
 func (m *DB) PrintIndexes(collection string) {
 	if m.client == nil {
-		log.Println("[DB]: Cannot print indexes. Not connected to MongoDB")
+		logger.Warn("[DB]: Cannot print indexes. Not connected to MongoDB")
 		return
 	}
 
 	if m.connection == nil {
-		log.Println("[DB]: Cannot print indexes. Not a valid database")
+		logger.Warn("[DB]: Cannot print indexes. Not a valid database")
 		return
 	}
 
@@ -127,12 +127,12 @@ func (m *DB) PrintIndexes(collection string) {
 	batchSize := int32(10)
 	cur, err := c.Indexes().List(context.Background(), &options.ListIndexesOptions{BatchSize: &batchSize, MaxTime: &duration})
 	if err != nil {
-		log.Println("[DB]: Something went wrong listing indexes", err)
+		logger.Error("[DB]: Something went wrong listing indexes", err)
 	}
 	for cur.Next(context.Background()) {
 		index := bson.D{}
 		cur.Decode(&index)
-		log.Println(fmt.Sprintf("index found %v", index))
+		logger.Infof("Index found: %v", index)
 	}
 }
 

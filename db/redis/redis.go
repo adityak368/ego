@@ -3,12 +3,11 @@ package redis
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 
-	"github.com/go-redis/redis"
-
 	"github.com/adityak368/ego/db"
+	"github.com/adityak368/swissknife/logger"
+	"github.com/go-redis/redis"
 )
 
 // DB implements redis database
@@ -60,7 +59,7 @@ func (r *DB) Connect(handlers ...db.Handler) error {
 		}
 	}
 
-	log.Println(r)
+	logger.Info(r)
 
 	return nil
 }

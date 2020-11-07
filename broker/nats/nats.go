@@ -3,10 +3,10 @@ package nats
 import (
 	"errors"
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/adityak368/ego/broker"
+	"github.com/adityak368/swissknife/logger"
 	"github.com/golang/protobuf/proto"
 	"github.com/nats-io/nats.go"
 )
@@ -45,7 +45,7 @@ func (n *natsBroker) Connect() error {
 	if err != nil {
 		return err
 	}
-	log.Printf("[NATS]: Connected to %s", n.Address())
+	logger.Infof("[NATS]: Connected to %s", n.Address())
 	n.connection = conn
 	return nil
 }
@@ -58,7 +58,7 @@ func (n *natsBroker) Disconnect() error {
 	}
 
 	n.connection.Close()
-	log.Printf("[NATS]: Disconnected from %s", n.Address())
+	logger.Infof("[NATS]: Disconnected from %s", n.Address())
 	return nil
 }
 
@@ -120,13 +120,13 @@ func (n *natsBroker) Subscribe(topic string, h interface{}) (broker.Subscriber, 
 		msg := reflect.New(msgType.Elem())
 		protoMsg, ok := msg.Interface().(proto.Message)
 		if !ok {
-			log.Println("[NATS]: Message does not implement protobuf message")
+			logger.Warn("[NATS]: Message does not implement protobuf message")
 			return
 		}
 
 		err := proto.Unmarshal(m.Data, protoMsg)
 		if err != nil {
-			log.Println("[NATS]: Could not decode message")
+			logger.Warn("[NATS]: Could not decode message")
 			return
 		}
 		cb.Call([]reflect.Value{msg})
@@ -141,7 +141,7 @@ func (n *natsBroker) Subscribe(topic string, h interface{}) (broker.Subscriber, 
 	}
 
 	n.subscriptionMap[topic] = subscriber
-	log.Printf("[NATS]: Subscribed to topic '%s'", topic)
+	logger.Infof("[NATS]: Subscribed to topic '%s'", topic)
 	return subscriber, nil
 }
 
@@ -165,7 +165,7 @@ func (n *natsBroker) SubscribeRaw(topic string, cb func(data []byte) error) (bro
 	}
 
 	n.subscriptionMap[topic] = subscriber
-	log.Printf("[NATS]: Subscribed to topic '%s'", topic)
+	logger.Infof("[NATS]: Subscribed to topic '%s'", topic)
 	return subscriber, nil
 }
 

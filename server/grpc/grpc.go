@@ -3,11 +3,11 @@ package grpc
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net"
 
 	"github.com/adityak368/ego/registry"
 	"github.com/adityak368/ego/server"
+	"github.com/adityak368/swissknife/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -57,7 +57,7 @@ func (s *grpcServer) Run() error {
 
 	addr := listener.Addr().(*net.TCPAddr)
 
-	log.Println("[GRPC-Server]: Server listening on", addr)
+	logger.Info("[GRPC-Server]: Server listening on", addr)
 
 	// add our service details to the registry if present
 	if s.options.Registry != nil {

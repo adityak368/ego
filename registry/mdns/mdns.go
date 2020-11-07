@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"strconv"
 	"strings"
 	"sync"
 
 	"github.com/adityak368/ego/registry"
+	"github.com/adityak368/swissknife/logger"
 	"github.com/grandcat/zeroconf"
 )
 
@@ -100,7 +100,7 @@ func (r *mdnsRegistry) Register(entry registry.Entry) error {
 		return err
 	}
 
-	log.Printf("[MDNS-Registry]: Registered service '%s'", entry.Name)
+	logger.Infof("[MDNS-Registry]: Registered service '%s'", entry.Name)
 	r.server = server
 	return nil
 }
@@ -108,7 +108,7 @@ func (r *mdnsRegistry) Register(entry registry.Entry) error {
 // Deregister removes the service to the registry
 func (r *mdnsRegistry) Deregister(serviceName string) error {
 	r.server.Shutdown()
-	log.Printf("[MDNS-Registry]: Deregistered service '%s'", serviceName)
+	logger.Infof("[MDNS-Registry]: Deregistered service '%s'", serviceName)
 	return nil
 }
 
@@ -188,7 +188,7 @@ func (r *mdnsRegistry) Watch() error {
 							meta[parts[0]] = parts[1]
 						}
 						endpoint.Metadata = meta
-						log.Printf("[MDNS-Registry]: Discovered service %s version {%s} at %s", endpoint.Name, endpoint.Version, endpoint.Address)
+						logger.Infof("[MDNS-Registry]: Discovered service %s version {%s} at %s", endpoint.Name, endpoint.Version, endpoint.Address)
 						endpoints = append(endpoints, endpoint)
 					}
 					r.mutex.Lock()
