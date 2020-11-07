@@ -5,7 +5,7 @@ go 1.14
 replace github.com/adityak368/ego/db => ./
 
 require (
-	github.com/adityak368/swissknife/logger v0.0.0-20201107143956-1e90dcf1dc22
+	github.com/adityak368/swissknife/logger v0.0.0-20201107160000-5f5e30188eb2
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/kr/text v0.2.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
