@@ -16,6 +16,4 @@ type Client interface {
 	Disconnect() error
 	// Handle returns the raw connection handle to the rpc server
 	Handle() interface{}
-	// String returns the description of the client
-	String() string
 }

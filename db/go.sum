@@ -1,6 +1,10 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/adityak368/rlog v0.0.0-20201107155716-e0333b9540b2 h1:gRwqeh7S9IFqDlWwlvZKOaT73PKo/Z5ThBtuSmsDc/E=
+github.com/adityak368/rlog v0.0.0-20201107155716-e0333b9540b2/go.mod h1:nUmIilDdAUk/T5rMKVbtZbGGR14D2Z/lzjemyXcLn8k=
 github.com/adityak368/swissknife/logger v0.0.0-20201107143956-1e90dcf1dc22 h1:alo3KE4YeeF5EwCyR7T6MZFuQ3m0drQGpWMb8g9jtGU=
 github.com/adityak368/swissknife/logger v0.0.0-20201107143956-1e90dcf1dc22/go.mod h1:lFjRyiBQlxBjbsgbvtCT2v16JBDbkhscfTULfBeJ6DU=
+github.com/adityak368/swissknife/logger v0.0.0-20201107160000-5f5e30188eb2 h1:9ozUixbY59/dUht0RvnyPd4SnQCUdf3MsIjyKQu9e9k=
+github.com/adityak368/swissknife/logger v0.0.0-20201107160000-5f5e30188eb2/go.mod h1:QDey6DdzM/5Lh+J4TlqIiKiuB+SGhWeSUtkv32s38RY=
 github.com/aws/aws-sdk-go v1.34.28 h1:sscPpn/Ns3i0F4HPEWAVcwdIRaZZCuL7llJ2/60yPIk=
 github.com/aws/aws-sdk-go v1.34.28/go.mod h1:H7NKnBqNVzoTJpGfLrQkkD+ytBA93eiDYi/+8rV9s48=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=

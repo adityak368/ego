@@ -6,6 +6,4 @@ type Model interface {
 	CreateIndexes(db Database) error
 	// PrintIndexes prints the indexes of the model
 	PrintIndexes(db Database)
-	// String returns the description of the model
-	String() string
 }

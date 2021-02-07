@@ -14,6 +14,4 @@ type Server interface {
 	Handle() interface{}
 	// Run the server
 	Run() error
-	// String returns the description of the server
-	String() string
 }

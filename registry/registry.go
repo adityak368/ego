@@ -18,6 +18,4 @@ type Registry interface {
 	Watch() error
 	// CancelWatch stops the registry watch mode
 	CancelWatch() error
-	// String returns the description of the registry
-	String() string
 }

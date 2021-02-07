@@ -35,6 +35,4 @@ type Broker interface {
 	SubscribeRaw(topic string, h func(data []byte) error) (Subscriber, error)
 	// Handle returns the raw connection handle to the broker
 	Handle() interface{}
-	// String returns the description of the broker
-	String() string
 }
