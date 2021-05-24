@@ -1,5 +1,7 @@
 package client
 
+import "context"
+
 // Client is an interface used for rpc calls
 type Client interface {
 	// Name returns the service name the client connects to
@@ -11,7 +13,7 @@ type Client interface {
 	// Address Returns the Target address
 	Address() string
 	// Connect connects the client to the rpc server
-	Connect() error
+	Connect(ctx context.Context) error
 	// Disconnect disconnects the client
 	Disconnect() error
 	// Handle returns the raw connection handle to the rpc server
