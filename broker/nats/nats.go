@@ -1,6 +1,7 @@
 package nats
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -105,11 +106,16 @@ func (n *natsBroker) Subscribe(topic string, h interface{}) (broker.Subscriber, 
 		return nil, errors.New("[NATS]: Need a function as a callback")
 	}
 
-	if typ.NumIn() != 1 {
-		return nil, errors.New("[NATS]: Function should take a single input parameter which is the message")
+	if typ.NumIn() != 2 {
+		return nil, errors.New("[NATS]: Function takes two inputs. 1. context.Context and 2. proto.Message which is the message")
 	}
 
-	msgType := typ.In(0)
+	ctxType := typ.In(0)
+	if ctxType.Kind() != reflect.Interface || !ctxType.Implements(reflect.TypeOf((*context.Context)(nil)).Elem()) {
+		return nil, errors.New("[NATS]: First Parameter should be of type context.Context")
+	}
+
+	msgType := typ.In(1)
 	if msgType.Kind() != reflect.Ptr {
 		return nil, errors.New("[NATS]: Message should be a pointer")
 	}
@@ -118,6 +124,7 @@ func (n *natsBroker) Subscribe(topic string, h interface{}) (broker.Subscriber, 
 
 	subscription, err := n.connection.Subscribe(topic, func(m *nats.Msg) {
 		msg := reflect.New(msgType.Elem())
+
 		protoMsg, ok := msg.Interface().(proto.Message)
 		if !ok {
 			logger.Warn("[NATS]: Message does not implement protobuf message")
@@ -129,7 +136,8 @@ func (n *natsBroker) Subscribe(topic string, h interface{}) (broker.Subscriber, 
 			logger.Warn("[NATS]: Could not decode message")
 			return
 		}
-		cb.Call([]reflect.Value{msg})
+
+		cb.Call([]reflect.Value{reflect.ValueOf(context.Background()), msg})
 	})
 	if err != nil {
 		return nil, err

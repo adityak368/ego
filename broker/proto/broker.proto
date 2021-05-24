@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package broker;
+
+option go_package = "gen/broker";
+
+message TestMessage {
+	string Data = 1;
+}

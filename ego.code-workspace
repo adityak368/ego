@@ -1,0 +1,33 @@
+{
+    "folders": [
+        {
+            "path": "broker"
+        },
+        {
+            "path": "client"
+        },
+        {
+            "path": "db"
+        },
+        {
+            "path": "registry"
+        },
+        {
+            "path": "server"
+        }
+    ],
+    "settings": {
+        "protoc": {
+            "compile_on_save": true,
+            "options": ["--proto_path=.", "--go-grpc_out=.", "--go_out=."]
+        },
+        "gopls": {
+            "experimentalWorkspaceModule": true
+        },
+        "go.buildOnSave": "workspace",
+        "go.lintOnSave": "workspace",
+        "go.useCodeSnippetsOnFunctionSuggestWithoutType": true,
+        "go.useCodeSnippetsOnFunctionSuggest": true,
+        "go.vetOnSave": "workspace"
+    }
+}
