@@ -66,12 +66,12 @@ func (s *grpcServer) Run() error {
 			Address: s.Address(),
 			Version: s.options.Version,
 		})
+		defer s.options.Registry.Deregister(s.options.Name)
 		err := s.options.Registry.Watch()
+		defer s.options.Registry.CancelWatch()
 		if err != nil {
 			return err
 		}
-		defer s.options.Registry.Deregister(s.options.Name)
-		defer s.options.Registry.CancelWatch()
 	}
 
 	if e := s.server.Serve(listener); e != nil {
