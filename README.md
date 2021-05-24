@@ -11,15 +11,15 @@ The framework is split into modules and does not bloat the codebase so that you 
 
 The Generator uses GRPC + Protobuf + NATS + Kubernetes + Skaffold + Echo + Nginx and supports
 
-- Automatic containerization of services and deployment using kubernetes
-- Auto reload on code change
-- Clearly defined interfaces for services using protobuf
+-   Automatic containerization of services and deployment using kubernetes
+-   Auto reload on code change
+-   Clearly defined interfaces for services using protobuf
 
 ### Broker
 
-- Defines the broker interface.
-- NATS is supported and used by default
-- Broker uses protobuf message encoding
+-   Defines the broker interface.
+-   NATS is supported and used by default
+-   Broker uses protobuf message encoding
 
 ```go
 
@@ -87,7 +87,7 @@ message SendEmailRequest {
 
 ### Registry
 
-- Defines the Registry interface. Default implementation is mdns. Useful only during local development as most cloud providers block mdns.
+-   Defines the Registry interface. Default implementation is mdns. Useful only during local development as most cloud providers block mdns.
 
 ```go
 
@@ -120,8 +120,8 @@ message SendEmailRequest {
 
 ### Server
 
-- Defines the Server interface which serves RPC requests from other microservices
-- GRPC is supported and used by default
+-   Defines the Server interface which serves RPC requests from other microservices
+-   GRPC is supported and used by default
 
 ```go
 
@@ -185,8 +185,8 @@ message UserCreated {
 
 ### Client
 
-- Defines the Client interface which makes a RPC
-- GRPC is supported and used by default
+-   Defines the Client interface which makes a RPC
+-   GRPC is supported and used by default
 
 ```go
 
@@ -214,7 +214,9 @@ message UserCreated {
     })
 
     // Connect the client to server
-    err := anotherServiceClient.Connect()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+    err := anotherServiceClient.Connect(ctx)
     if err != nil {
         log.Fatal(err)
     }
@@ -249,8 +251,8 @@ message SendEmailResponse {
 
 ### DB
 
-- Defines the Database and Model interface for connecting to the database
-- Contains implementations for MongoDB and Redis
+-   Defines the Database and Model interface for connecting to the database
+-   Contains implementations for MongoDB and Redis
 
 ```go
 

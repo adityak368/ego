@@ -41,7 +41,6 @@ func (g *grpcClient) Options() client.Options {
 // Connect connects the client to the rpc server
 func (g *grpcClient) Connect(ctx context.Context) error {
 
-	logger.Infof("[GRPC-Client]: Connecting to %s on %s", g.options.Name, g.options.Target)
 	conn, err := grpc.DialContext(
 		ctx,
 		g.options.Target,
