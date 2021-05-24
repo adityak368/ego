@@ -1,8 +1,10 @@
 package grpc
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/adityak368/ego/client"
 	"github.com/adityak368/swissknife/logger"
@@ -39,7 +41,13 @@ func (g *grpcClient) Options() client.Options {
 
 // Connect connects the client to the rpc server
 func (g *grpcClient) Connect() error {
-	conn, err := grpc.Dial(
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	logger.Infof("[GRPC-Client]: Connecting to %s on %s", g.options.Name, g.options.Target)
+	conn, err := grpc.DialContext(
+		ctx,
 		g.options.Target,
 		g.grpcOptions...,
 	)
@@ -47,7 +55,7 @@ func (g *grpcClient) Connect() error {
 		return err
 	}
 
-	logger.Infof("[GRPC-Client]: Connecting to %s on %s", g.options.Name, g.options.Target)
+	logger.Infof("[GRPC-Client]: Connected to %s on %s", g.options.Name, g.options.Target)
 	g.conn = conn
 	return nil
 }
@@ -57,12 +65,13 @@ func (g *grpcClient) Disconnect() error {
 	if g.conn == nil {
 		return errors.New("[GRPC-Client]: Cannot Disconnect. Client not Initialized")
 	}
+	logger.Infof("[GRPC-Client]: Disconnecting %s from %s", g.options.Name, g.options.Target)
 	return g.conn.Close()
 }
 
 // String returns the description of the client
 func (g *grpcClient) String() string {
-	return fmt.Sprintf("[GRPC-Client]: Client %s connected to %s", g.options.Name, g.options.Target)
+	return fmt.Sprintf("[GRPC-Client]: Client %s with target %s", g.options.Name, g.options.Target)
 }
 
 // Handle returns the raw connection handle to the rpc server
