@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/adityak368/ego/db"
-	"github.com/adityak368/swissknife/logger"
+	"github.com/adityak368/swissknife/logger/v2"
 	"github.com/go-redis/redis"
 )
 
@@ -59,7 +59,7 @@ func (r *DB) Connect(handlers ...db.Handler) error {
 		}
 	}
 
-	logger.Info(r)
+	logger.Info().Msg(r.String())
 
 	return nil
 }

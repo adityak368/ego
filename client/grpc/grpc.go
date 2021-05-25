@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/adityak368/ego/client"
-	"github.com/adityak368/swissknife/logger"
+	"github.com/adityak368/swissknife/logger/v2"
 	"google.golang.org/grpc"
 )
 
@@ -50,7 +50,7 @@ func (g *grpcClient) Connect(ctx context.Context) error {
 		return err
 	}
 
-	logger.Infof("[GRPC-Client]: Connected to %s on %s", g.options.Name, g.options.Target)
+	logger.Info().Msgf("[GRPC-Client]: Connected to %s on %s", g.options.Name, g.options.Target)
 	g.conn = conn
 	return nil
 }
@@ -60,7 +60,7 @@ func (g *grpcClient) Disconnect() error {
 	if g.conn == nil {
 		return errors.New("[GRPC-Client]: Cannot Disconnect. Client not Initialized")
 	}
-	logger.Infof("[GRPC-Client]: Disconnecting %s from %s", g.options.Name, g.options.Target)
+	logger.Info().Msgf("[GRPC-Client]: Disconnecting %s from %s", g.options.Name, g.options.Target)
 	return g.conn.Close()
 }
 
