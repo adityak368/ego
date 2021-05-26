@@ -2,7 +2,7 @@
 package broker
 
 import (
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 // Subscriber is a convenience return type for the Subscribe method
@@ -11,6 +11,10 @@ type Subscriber interface {
 	Topic() string
 	// Unsubscribe unsubscribes to the topic
 	Unsubscribe() error
+}
+
+type Message struct {
+	Data proto.Message
 }
 
 // Broker is an interface used for asynchronous messaging.

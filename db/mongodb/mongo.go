@@ -2,9 +2,10 @@ package mongodb
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/adityak368/ego/db"
 	"github.com/adityak368/swissknife/logger/v2"

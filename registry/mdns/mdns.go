@@ -2,12 +2,13 @@ package mdns
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/pkg/errors"
 
 	"github.com/adityak368/ego/registry"
 	"github.com/adityak368/swissknife/logger/v2"

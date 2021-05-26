@@ -1,8 +1,8 @@
 package grpc
 
 import (
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"net"
 
 	"github.com/adityak368/ego/registry"

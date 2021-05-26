@@ -2,13 +2,14 @@ package nats
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"reflect"
 
+	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/adityak368/ego/broker"
 	"github.com/adityak368/swissknife/logger/v2"
-	"github.com/golang/protobuf/proto"
 	"github.com/nats-io/nats.go"
 )
 
@@ -120,6 +121,15 @@ func (n *natsBroker) Subscribe(topic string, h interface{}) (broker.Subscriber, 
 		return nil, errors.New("[NATS]: Message should be a pointer")
 	}
 
+	if typ.NumOut() != 1 {
+		return nil, errors.New("[NATS]: Function should have a single return value")
+	}
+
+	errType := typ.Out(0)
+	if errType.Kind() != reflect.Interface || !errType.Implements(reflect.TypeOf((*error)(nil)).Elem()) {
+		return nil, errors.New("[NATS]: Function should return error or nil")
+	}
+
 	cb := reflect.ValueOf(h)
 
 	subscription, err := n.connection.Subscribe(topic, func(m *nats.Msg) {
@@ -137,8 +147,23 @@ func (n *natsBroker) Subscribe(topic string, h interface{}) (broker.Subscriber, 
 			return
 		}
 
-		cb.Call([]reflect.Value{reflect.ValueOf(context.Background()), msg})
+		res := cb.Call([]reflect.Value{reflect.ValueOf(context.Background()), msg})
+
+		if len(res) != 1 {
+			logger.Warn().Msg("[NATS]: Invalid return value")
+			return
+		}
+
+		if v := res[0].Interface(); v != nil {
+			err, ok = v.(error)
+			if !ok {
+				logger.Warn().Msg("[NATS]: Could not parse error")
+			} else {
+				logger.Error().Err(err).Msg("")
+			}
+		}
 	})
+
 	if err != nil {
 		return nil, err
 	}

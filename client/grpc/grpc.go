@@ -2,8 +2,8 @@ package grpc
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 
 	"github.com/adityak368/ego/client"
 	"github.com/adityak368/swissknife/logger/v2"

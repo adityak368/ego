@@ -1,9 +1,10 @@
 package redis
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
+
+	"github.com/pkg/errors"
 
 	"github.com/adityak368/ego/db"
 	"github.com/adityak368/swissknife/logger/v2"
