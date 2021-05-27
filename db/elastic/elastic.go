@@ -171,7 +171,34 @@ func (m *DB) InsertDocument(index string, document interface{}) (map[string]inte
 	defer res.Body.Close()
 
 	if res.IsError() {
+		return nil, errors.New(res.String())
+	}
+
+	var r map[string]interface{}
+	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
 		return nil, err
+	}
+
+	return r, nil
+}
+
+// InsertDocumentAsString inserts a document to an index
+func (m *DB) InsertDocumentAsString(index string, data string) (map[string]interface{}, error) {
+
+	req := esapi.IndexRequest{
+		Index:   index,
+		Body:    strings.NewReader(string(data)),
+		Refresh: "true",
+	}
+
+	res, err := req.Do(context.Background(), m.client)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return nil, errors.New(res.String())
 	}
 
 	var r map[string]interface{}
