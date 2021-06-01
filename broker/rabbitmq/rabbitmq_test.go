@@ -1,4 +1,4 @@
-package nats
+package rabbitmq
 
 import (
 	"context"
@@ -47,10 +47,16 @@ func TestNats(t *testing.T) {
 		return errors.New("Something went wrong")
 	}
 
-	bkr := New()
+	bkr := New(Config{
+		Durable:          true,
+		DeleteWhenUnused: false,
+		Exclusive:        false,
+		NoWait:           true,
+		AutoAck:          false,
+	})
 	bkr.Init(broker.Options{
-		Name:    "Nats",
-		Address: "localhost:4222",
+		Name:    "RabbitMQ",
+		Address: "amqp://localhost:5672",
 	})
 
 	err := bkr.Connect()

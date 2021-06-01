@@ -2,6 +2,8 @@
 package broker
 
 import (
+	"context"
+
 	"google.golang.org/protobuf/proto"
 )
 
@@ -36,7 +38,7 @@ type Broker interface {
 	// Subscribe subscribes a handler to the topic
 	Subscribe(topic string, h interface{}) (Subscriber, error)
 	// SubscribeRaw subscribes a raw handler to the topic
-	SubscribeRaw(topic string, h func(data []byte) error) (Subscriber, error)
+	SubscribeRaw(topic string, h func(c context.Context, data []byte) error) (Subscriber, error)
 	// Handle returns the raw connection handle to the broker
 	Handle() interface{}
 }
