@@ -99,6 +99,8 @@ func (n *rabbitmqBroker) Publish(topic string, m proto.Message) error {
 		if err != nil {
 			return err
 		}
+		n.queueMap[topic] = newChannel
+		ch = newChannel
 		_, err = ch.QueueDeclare(
 			topic,
 			n.config.Durable,
@@ -110,8 +112,6 @@ func (n *rabbitmqBroker) Publish(topic string, m proto.Message) error {
 		if err != nil {
 			return err
 		}
-		n.queueMap[topic] = newChannel
-		ch = newChannel
 	}
 
 	data, err := proto.Marshal(m)
@@ -147,6 +147,8 @@ func (n *rabbitmqBroker) PublishRaw(topic string, m []byte) error {
 		if err != nil {
 			return err
 		}
+		n.queueMap[topic] = newChannel
+		ch = newChannel
 		_, err = ch.QueueDeclare(
 			topic,
 			n.config.Durable,
@@ -158,8 +160,6 @@ func (n *rabbitmqBroker) PublishRaw(topic string, m []byte) error {
 		if err != nil {
 			return err
 		}
-		n.queueMap[topic] = newChannel
-		ch = newChannel
 	}
 
 	err := ch.Publish(
