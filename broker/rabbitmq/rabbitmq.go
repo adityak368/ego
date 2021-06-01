@@ -10,16 +10,14 @@ import (
 
 	"github.com/adityak368/ego/broker"
 	"github.com/adityak368/swissknife/logger/v2"
-	"github.com/isayme/go-amqp-reconnect/rabbitmq"
-	"github.com/streadway/amqp"
+	"github.com/wagslane/go-rabbitmq"
 )
 
 // RabbitMq is the RABBITMQ implementation of the broker
 type rabbitmqBroker struct {
 	options         broker.Options
-	connection      *rabbitmq.Connection
-	subscriptionMap map[string]*rabbitmqSubscriber
-	queueMap        map[string]*rabbitmq.Channel
+	subscriptionMap map[string]rabbitmq.Consumer
+	publisherMap    map[string]rabbitmq.Publisher
 	config          Config
 }
 
@@ -46,73 +44,37 @@ func (n *rabbitmqBroker) String() string {
 
 // Connect connects to the broker
 func (n *rabbitmqBroker) Connect() error {
-
-	conn, err := rabbitmq.Dial(n.Address())
-	if err != nil {
-		return err
-	}
-
 	logger.Info().Msgf("[RABBITMQ]: Connected to %s", n.Address())
-	n.connection = conn
-
 	return nil
 }
 
 // Disconnect disconnects from the broker
 func (n *rabbitmqBroker) Disconnect() error {
-
-	if n.connection == nil {
-		return errors.New("[RABBITMQ]: Cannot Disconnect. Not connected to broker")
-	}
-
-	for _, v := range n.queueMap {
-		err := v.Close()
-		if err != nil {
-			return err
-		}
-	}
-
-	err := n.connection.Close()
-	if err != nil {
-		return err
-	}
-
 	logger.Info().Msgf("[RABBITMQ]: Disconnected from %s", n.Address())
 	return nil
 }
 
 // Handle returns the raw connection handle to the db
 func (n *rabbitmqBroker) Handle() interface{} {
-	return n.connection
+	return nil
 }
 
 // Publish publishes a message to the topic
 func (n *rabbitmqBroker) Publish(topic string, m proto.Message) error {
 
-	if n.connection == nil {
-		return errors.New("[RABBITMQ]: Cannot Publish. Not connected to broker")
-	}
-
-	var ch *rabbitmq.Channel
-	ch, ok := n.queueMap[topic]
+	var p rabbitmq.Publisher
+	p, ok := n.publisherMap[topic]
 	if !ok {
-		newChannel, err := n.connection.Channel()
-		if err != nil {
-			return err
-		}
-		n.queueMap[topic] = newChannel
-		ch = newChannel
-		_, err = ch.QueueDeclare(
-			topic,
-			n.config.Durable,
-			n.config.DeleteWhenUnused,
-			n.config.Exclusive,
-			n.config.NoWait,
-			n.config.Arguments,
+		publisher, _, err := rabbitmq.NewPublisher(
+			n.Address(),
+			// can pass nothing for no logging
+			rabbitmq.WithPublisherOptionsLogging,
 		)
 		if err != nil {
 			return err
 		}
+		n.publisherMap[topic] = publisher
+		p = publisher
 	}
 
 	data, err := proto.Marshal(m)
@@ -120,69 +82,60 @@ func (n *rabbitmqBroker) Publish(topic string, m proto.Message) error {
 		return err
 	}
 
-	err = ch.Publish(
-		n.config.Exchange,
-		topic, // routing key
-		false, // mandatory
-		false, // immediate
-		amqp.Publishing{
-			ContentType: "application/octet-stream",
-			Body:        data,
+	err = p.Publish(
+		data,
+		[]string{topic},
+		rabbitmq.WithPublishOptionsContentType("application/octet-stream"),
+		rabbitmq.WithPublishOptionsPersistentDelivery,
+		func(options *rabbitmq.PublishOptions) {
+			options.Exchange = ""
+			options.Mandatory = false
 		},
 	)
+	if err != nil {
+		return err
+	}
 
-	return err
+	return nil
 }
 
 // PublishRaw publishes raw data to the topic
 func (n *rabbitmqBroker) PublishRaw(topic string, m []byte) error {
 
-	if n.connection == nil {
-		return errors.New("[RABBITMQ]: Cannot Publish. Not connected to broker")
-	}
-
-	var ch *rabbitmq.Channel
-	ch, ok := n.queueMap[topic]
+	var p rabbitmq.Publisher
+	p, ok := n.publisherMap[topic]
 	if !ok {
-		newChannel, err := n.connection.Channel()
-		if err != nil {
-			return err
-		}
-		n.queueMap[topic] = newChannel
-		ch = newChannel
-		_, err = ch.QueueDeclare(
-			topic,
-			n.config.Durable,
-			n.config.DeleteWhenUnused,
-			n.config.Exclusive,
-			n.config.NoWait,
-			n.config.Arguments,
+		publisher, _, err := rabbitmq.NewPublisher(
+			n.Address(),
+			// can pass nothing for no logging
+			rabbitmq.WithPublisherOptionsLogging,
 		)
 		if err != nil {
 			return err
 		}
+		n.publisherMap[topic] = publisher
+		p = publisher
 	}
 
-	err := ch.Publish(
-		n.config.Exchange,
-		topic, // routing key
-		false, // mandatory
-		false, // immediate
-		amqp.Publishing{
-			ContentType: "application/octet-stream",
-			Body:        m,
+	err := p.Publish(
+		m,
+		[]string{topic},
+		rabbitmq.WithPublishOptionsContentType("application/octet-stream"),
+		rabbitmq.WithPublishOptionsPersistentDelivery,
+		func(options *rabbitmq.PublishOptions) {
+			options.Exchange = ""
+			options.Mandatory = false
 		},
 	)
+	if err != nil {
+		return err
+	}
 
-	return err
+	return nil
 }
 
 // Subscribe subscribes a handler to the topic
 func (n *rabbitmqBroker) Subscribe(topic string, h interface{}) (broker.Subscriber, error) {
-
-	if n.connection == nil {
-		return nil, errors.New("[RABBITMQ]: Cannot Subscribe. Not connected to broker")
-	}
 
 	typ := reflect.TypeOf(h)
 	if typ.Kind() != reflect.Func {
@@ -214,63 +167,41 @@ func (n *rabbitmqBroker) Subscribe(topic string, h interface{}) (broker.Subscrib
 
 	cb := reflect.ValueOf(h)
 
-	var ch *rabbitmq.Channel
-	ch, ok := n.queueMap[topic]
+	var c rabbitmq.Consumer
+	c, ok := n.subscriptionMap[topic]
 	if !ok {
-		newChannel, err := n.connection.Channel()
-		if err != nil {
-			return nil, err
-		}
-		ch = newChannel
-		n.queueMap[topic] = newChannel
-		_, err = ch.QueueDeclare(
-			topic,
-			n.config.Durable,
-			n.config.DeleteWhenUnused,
-			n.config.Exclusive,
-			n.config.NoWait,
-			n.config.Arguments,
+		consumer, err := rabbitmq.NewConsumer(
+			n.Address(),
+			rabbitmq.WithConsumerOptionsLogging,
 		)
 		if err != nil {
-			return nil, err
+			logger.Error().Err(err).Msg("")
 		}
+		n.subscriptionMap[topic] = consumer
+		c = consumer
 	}
 
-	msgs, err := ch.Consume(
-		topic, // queue
-		"",    // consumer
-		n.config.AutoAck,
-		n.config.Exclusive,
-		false, // no-local
-		n.config.NoWait,
-		n.config.Arguments,
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	go func() {
-		for d := range msgs {
+	err := c.StartConsuming(
+		func(d rabbitmq.Delivery) bool {
 			msg := reflect.New(msgType.Elem())
 
 			protoMsg, ok := msg.Interface().(proto.Message)
 			if !ok {
 				logger.Warn().Msg("[RABBITMQ]: Message does not implement protobuf message")
-				return
+				return false
 			}
 
 			err := proto.Unmarshal(d.Body, protoMsg)
 			if err != nil {
 				logger.Warn().Msg("[RABBITMQ]: Could not decode message")
-				return
+				return false
 			}
 
 			res := cb.Call([]reflect.Value{reflect.ValueOf(context.Background()), msg})
 
 			if len(res) != 1 {
 				logger.Warn().Msg("[RABBITMQ]: Invalid return value")
-				return
+				return false
 			}
 
 			if v := res[0].Interface(); v != nil {
@@ -280,22 +211,32 @@ func (n *rabbitmqBroker) Subscribe(topic string, h interface{}) (broker.Subscrib
 				} else {
 					logger.Error().Err(err).Msg("")
 				}
-				continue
+				return false
 			}
 
-			if !n.config.AutoAck {
-				d.Ack(false)
-			}
-		}
-	}()
+			return true
+		},
+		topic,
+		nil,
+		rabbitmq.WithConsumeOptionsConcurrency(1),
+		func(options *rabbitmq.ConsumeOptions) {
+			options.ConsumerAutoAck = n.config.AutoAck
+			options.ConsumerArgs = rabbitmq.Table(n.config.Arguments)
+			options.ConsumerNoWait = n.config.NoWait
+			options.QueueAutoDelete = n.config.DeleteWhenUnused
+			options.QueueExclusive = n.config.Exclusive
+			options.QueueDurable = n.config.Durable
+		},
+	)
 
-	subscriber := &rabbitmqSubscriber{
-		topic:        topic,
-		subscription: ch,
-		noWait:       n.config.NoWait,
+	if err != nil {
+		return nil, err
 	}
 
-	n.subscriptionMap[topic] = subscriber
+	subscriber := &rabbitmqSubscriber{
+		topic: topic,
+	}
+
 	logger.Info().Msgf("[RABBITMQ]: Subscribed to topic '%s'", topic)
 	return subscriber, nil
 }
@@ -303,67 +244,52 @@ func (n *rabbitmqBroker) Subscribe(topic string, h interface{}) (broker.Subscrib
 // SubscribeRaw subscribes a raw handler to the topic
 func (n *rabbitmqBroker) SubscribeRaw(topic string, h func(c context.Context, data []byte) error) (broker.Subscriber, error) {
 
-	if n.connection == nil {
-		return nil, errors.New("[RABBITMQ]: Cannot Subscribe. Not connected to broker")
-	}
-
-	var ch *rabbitmq.Channel
-	ch, ok := n.queueMap[topic]
+	var c rabbitmq.Consumer
+	c, ok := n.subscriptionMap[topic]
 	if !ok {
-		newChannel, err := n.connection.Channel()
-		if err != nil {
-			return nil, err
-		}
-		ch = newChannel
-		n.queueMap[topic] = newChannel
-		_, err = ch.QueueDeclare(
-			topic,
-			n.config.Durable,
-			n.config.DeleteWhenUnused,
-			n.config.Exclusive,
-			n.config.NoWait,
-			n.config.Arguments,
+		consumer, err := rabbitmq.NewConsumer(
+			n.Address(),
+			rabbitmq.WithConsumerOptionsLogging,
 		)
 		if err != nil {
-			return nil, err
+			logger.Error().Err(err).Msg("")
 		}
+		n.subscriptionMap[topic] = consumer
+		c = consumer
 	}
 
-	msgs, err := ch.Consume(
-		topic, // queue
-		"",    // consumer
-		n.config.AutoAck,
-		n.config.Exclusive,
-		false, // no-local
-		n.config.NoWait,
-		n.config.Arguments,
+	err := c.StartConsuming(
+		func(d rabbitmq.Delivery) bool {
+
+			err := h(context.Background(), d.Body)
+			if err != nil {
+				logger.Error().Err(err).Msg("")
+				return false
+			}
+
+			return true
+		},
+		topic,
+		nil,
+		rabbitmq.WithConsumeOptionsConcurrency(1),
+		func(options *rabbitmq.ConsumeOptions) {
+			options.ConsumerAutoAck = n.config.AutoAck
+			options.ConsumerArgs = rabbitmq.Table(n.config.Arguments)
+			options.ConsumerNoWait = n.config.NoWait
+			options.QueueAutoDelete = n.config.DeleteWhenUnused
+			options.QueueExclusive = n.config.Exclusive
+			options.QueueDurable = n.config.Durable
+		},
 	)
 
 	if err != nil {
 		return nil, err
 	}
 
-	go func() {
-		for d := range msgs {
-			err := h(context.Background(), d.Body)
-			if err != nil {
-				logger.Error().Err(err).Msg("")
-				continue
-			}
-
-			if !n.config.AutoAck {
-				d.Ack(false)
-			}
-		}
-	}()
-
 	subscriber := &rabbitmqSubscriber{
-		topic:        topic,
-		subscription: ch,
-		noWait:       n.config.NoWait,
+		topic: topic,
 	}
 
-	n.subscriptionMap[topic] = subscriber
 	logger.Info().Msgf("[RABBITMQ]: Subscribed to topic '%s'", topic)
 	return subscriber, nil
 }
@@ -371,8 +297,8 @@ func (n *rabbitmqBroker) SubscribeRaw(topic string, h func(c context.Context, da
 // New returns a new rabbitmqBroker broker
 func New(config Config) broker.Broker {
 	return &rabbitmqBroker{
-		subscriptionMap: make(map[string]*rabbitmqSubscriber),
+		subscriptionMap: make(map[string]rabbitmq.Consumer),
+		publisherMap:    make(map[string]rabbitmq.Publisher),
 		config:          config,
-		queueMap:        make(map[string]*rabbitmq.Channel),
 	}
 }

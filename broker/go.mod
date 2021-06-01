@@ -18,6 +18,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/streadway/amqp v1.0.0
 	github.com/stretchr/testify v1.6.1
+	github.com/wagslane/go-rabbitmq v0.5.1
 	google.golang.org/protobuf v1.23.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 )

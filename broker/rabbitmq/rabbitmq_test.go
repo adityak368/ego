@@ -13,7 +13,7 @@ import (
 
 const timeout = 5 * time.Second
 
-func TestNats(t *testing.T) {
+func TestRabbitMq(t *testing.T) {
 
 	r := require.New(t)
 
@@ -21,37 +21,39 @@ func TestNats(t *testing.T) {
 
 	// msg is a raw message
 	OnTestMessageRaw := func(ctx context.Context, msg []byte) error {
-		// Handle new user creation
 		r.Equal(msg, []byte("Test"), "Wrong data received")
 		return nil
 	}
 
 	// TestMessage is a protobuf message
 	OnTestMessageProto := func(ctx context.Context, msg *proto.TestMessage) error {
-		// Handle new user creation
 		r.Equal(msg.Data, "Test", "Wrong data received")
 		return nil
 	}
 
+	count := 0
+
 	// TestMessage is a protobuf message
 	OnTestMessageProtoWithError := func(ctx context.Context, msg *proto.TestMessage) error {
-		// Handle new user creation
 		r.Equal(msg.Data, "Test", "Wrong data received")
 		timer := time.NewTimer(1 * time.Second)
-
 		go func() {
 			<-timer.C
 			c <- true
 		}()
-
-		return errors.New("Something went wrong")
+		count = count + 1
+		if count == 0 {
+			return errors.New("something went wrong")
+		} else {
+			return nil
+		}
 	}
 
 	bkr := New(Config{
 		Durable:          true,
 		DeleteWhenUnused: false,
 		Exclusive:        false,
-		NoWait:           true,
+		NoWait:           false,
 		AutoAck:          false,
 	})
 	bkr.Init(broker.Options{
@@ -77,9 +79,12 @@ func TestNats(t *testing.T) {
 	r.Equal(subscriptionProtoWithError.Topic(), "test.testMessageProtoWithError", "test.testMessageProtoWithError subscription error")
 
 	// Publish the protobuf message to the broker
-	bkr.PublishRaw("test.testMessageRaw", []byte("Test"))
-	bkr.Publish("test.testMessageProto", &proto.TestMessage{Data: "Test"})
-	bkr.Publish("test.testMessageProtoWithError", &proto.TestMessage{Data: "Test"})
+	err = bkr.PublishRaw("test.testMessageRaw", []byte("Test"))
+	r.Nil(err)
+	err = bkr.Publish("test.testMessageProto", &proto.TestMessage{Data: "Test"})
+	r.Nil(err)
+	err = bkr.Publish("test.testMessageProtoWithError", &proto.TestMessage{Data: "Test"})
+	r.Nil(err)
 
 	select {
 	case <-c:

@@ -21,21 +21,18 @@ func TestNats(t *testing.T) {
 
 	// msg is a raw message
 	OnTestMessageRaw := func(ctx context.Context, msg []byte) error {
-		// Handle new user creation
 		r.Equal(msg, []byte("Test"), "Wrong data received")
 		return nil
 	}
 
 	// TestMessage is a protobuf message
 	OnTestMessageProto := func(ctx context.Context, msg *proto.TestMessage) error {
-		// Handle new user creation
 		r.Equal(msg.Data, "Test", "Wrong data received")
 		return nil
 	}
 
 	// TestMessage is a protobuf message
 	OnTestMessageProtoWithError := func(ctx context.Context, msg *proto.TestMessage) error {
-		// Handle new user creation
 		r.Equal(msg.Data, "Test", "Wrong data received")
 		timer := time.NewTimer(1 * time.Second)
 
@@ -71,9 +68,12 @@ func TestNats(t *testing.T) {
 	r.Equal(subscriptionProtoWithError.Topic(), "test.testMessageProtoWithError", "test.testMessageProtoWithError subscription error")
 
 	// Publish the protobuf message to the broker
-	bkr.PublishRaw("test.testMessageRaw", []byte("Test"))
-	bkr.Publish("test.testMessageProto", &proto.TestMessage{Data: "Test"})
-	bkr.Publish("test.testMessageProtoWithError", &proto.TestMessage{Data: "Test"})
+	err = bkr.PublishRaw("test.testMessageRaw", []byte("Test"))
+	r.Nil(err)
+	err = bkr.Publish("test.testMessageProto", &proto.TestMessage{Data: "Test"})
+	r.Nil(err)
+	err = bkr.Publish("test.testMessageProtoWithError", &proto.TestMessage{Data: "Test"})
+	r.Nil(err)
 
 	select {
 	case <-c:
