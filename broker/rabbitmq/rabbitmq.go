@@ -10,15 +10,16 @@ import (
 
 	"github.com/adityak368/ego/broker"
 	"github.com/adityak368/swissknife/logger/v2"
+	"github.com/isayme/go-amqp-reconnect/rabbitmq"
 	"github.com/streadway/amqp"
 )
 
 // RabbitMq is the RABBITMQ implementation of the broker
 type rabbitmqBroker struct {
 	options         broker.Options
-	connection      *amqp.Connection
+	connection      *rabbitmq.Connection
 	subscriptionMap map[string]*rabbitmqSubscriber
-	queueMap        map[string]*amqp.Channel
+	queueMap        map[string]*rabbitmq.Channel
 	config          Config
 }
 
@@ -46,7 +47,7 @@ func (n *rabbitmqBroker) String() string {
 // Connect connects to the broker
 func (n *rabbitmqBroker) Connect() error {
 
-	conn, err := amqp.Dial(n.Address())
+	conn, err := rabbitmq.Dial(n.Address())
 	if err != nil {
 		return err
 	}
@@ -92,7 +93,7 @@ func (n *rabbitmqBroker) Publish(topic string, m proto.Message) error {
 		return errors.New("[RABBITMQ]: Cannot Publish. Not connected to broker")
 	}
 
-	var ch *amqp.Channel
+	var ch *rabbitmq.Channel
 	ch, ok := n.queueMap[topic]
 	if !ok {
 		newChannel, err := n.connection.Channel()
@@ -140,7 +141,7 @@ func (n *rabbitmqBroker) PublishRaw(topic string, m []byte) error {
 		return errors.New("[RABBITMQ]: Cannot Publish. Not connected to broker")
 	}
 
-	var ch *amqp.Channel
+	var ch *rabbitmq.Channel
 	ch, ok := n.queueMap[topic]
 	if !ok {
 		newChannel, err := n.connection.Channel()
@@ -213,7 +214,7 @@ func (n *rabbitmqBroker) Subscribe(topic string, h interface{}) (broker.Subscrib
 
 	cb := reflect.ValueOf(h)
 
-	var ch *amqp.Channel
+	var ch *rabbitmq.Channel
 	ch, ok := n.queueMap[topic]
 	if !ok {
 		newChannel, err := n.connection.Channel()
@@ -306,7 +307,7 @@ func (n *rabbitmqBroker) SubscribeRaw(topic string, h func(c context.Context, da
 		return nil, errors.New("[RABBITMQ]: Cannot Subscribe. Not connected to broker")
 	}
 
-	var ch *amqp.Channel
+	var ch *rabbitmq.Channel
 	ch, ok := n.queueMap[topic]
 	if !ok {
 		newChannel, err := n.connection.Channel()
@@ -372,6 +373,6 @@ func New(config Config) broker.Broker {
 	return &rabbitmqBroker{
 		subscriptionMap: make(map[string]*rabbitmqSubscriber),
 		config:          config,
-		queueMap:        make(map[string]*amqp.Channel),
+		queueMap:        make(map[string]*rabbitmq.Channel),
 	}
 }

@@ -3,12 +3,12 @@ package rabbitmq
 import (
 	"fmt"
 
-	"github.com/streadway/amqp"
+	"github.com/isayme/go-amqp-reconnect/rabbitmq"
 )
 
 type rabbitmqSubscriber struct {
 	topic        string
-	subscription *amqp.Channel
+	subscription *rabbitmq.Channel
 	noWait       bool
 }
 
