@@ -3,7 +3,6 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/adityak368/ego/registry v1.0.1 h1:UjUuVqg+dN8wWSWbsj0BqJO/mfqeQxpcI2Kzqhq7rYM=
 github.com/adityak368/ego/registry v1.0.1/go.mod h1:V3c+1EEX2xtrrKBLmq8+AXS8nndwVeVz/s5tlK1FWCI=
 github.com/adityak368/rlog v0.0.0-20201107155716-e0333b9540b2/go.mod h1:nUmIilDdAUk/T5rMKVbtZbGGR14D2Z/lzjemyXcLn8k=
-github.com/adityak368/swissknife/logger v0.0.0-20201107160000-5f5e30188eb2 h1:9ozUixbY59/dUht0RvnyPd4SnQCUdf3MsIjyKQu9e9k=
 github.com/adityak368/swissknife/logger v0.0.0-20201107160000-5f5e30188eb2/go.mod h1:QDey6DdzM/5Lh+J4TlqIiKiuB+SGhWeSUtkv32s38RY=
 github.com/adityak368/swissknife/logger/v2 v2.0.1 h1:dbNwpmZkc62dg9bZi0XvKJHzWGODWFVHymwWmvs8384=
 github.com/adityak368/swissknife/logger/v2 v2.0.1/go.mod h1:twbYL/AMSn7nta+MqBpumepV+dDXv1DG3ZTgEKjQVcA=

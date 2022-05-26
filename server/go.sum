@@ -3,7 +3,6 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/adityak368/ego/registry v1.0.1 h1:UjUuVqg+dN8wWSWbsj0BqJO/mfqeQxpcI2Kzqhq7rYM=
 github.com/adityak368/ego/registry v1.0.1/go.mod h1:V3c+1EEX2xtrrKBLmq8+AXS8nndwVeVz/s5tlK1FWCI=
 github.com/adityak368/rlog v0.0.0-20201107155716-e0333b9540b2/go.mod h1:nUmIilDdAUk/T5rMKVbtZbGGR14D2Z/lzjemyXcLn8k=
-github.com/adityak368/swissknife/logger v0.0.0-20201107160000-5f5e30188eb2 h1:9ozUixbY59/dUht0RvnyPd4SnQCUdf3MsIjyKQu9e9k=
 github.com/adityak368/swissknife/logger v0.0.0-20201107160000-5f5e30188eb2/go.mod h1:QDey6DdzM/5Lh+J4TlqIiKiuB+SGhWeSUtkv32s38RY=
 github.com/adityak368/swissknife/logger/v2 v2.0.1 h1:dbNwpmZkc62dg9bZi0XvKJHzWGODWFVHymwWmvs8384=
 github.com/adityak368/swissknife/logger/v2 v2.0.1/go.mod h1:twbYL/AMSn7nta+MqBpumepV+dDXv1DG3ZTgEKjQVcA=
@@ -19,12 +18,12 @@ github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfU
 github.com/golang/mock v1.1.1/go.mod h1:oTYuIxOrZwtPieC+H1uAHpcLFnEyAGVDL/k47Jfbm0A=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.3.2/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
-github.com/golang/protobuf v1.3.3 h1:gyjaxf+svBWX08ZjK86iN9geUJF0H6gp2IRKX6Nf6/I=
 github.com/golang/protobuf v1.3.3/go.mod h1:vzj43D7+SQXF/4pzW/hwtAqwc6iTitCiVSaWz5lYuqw=
+github.com/golang/protobuf v1.5.0 h1:LUVKkCeviFUMKqHa4tXIIij/lbhnMbP7Fn5wKdKkRh4=
 github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=
 github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5aqRK0M=
-github.com/google/go-cmp v0.4.0 h1:xsAVV57WRhGj6kEIi8ReJzQlHHqcBYCElAvkovg3B/4=
 github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
+github.com/google/go-cmp v0.5.5 h1:Khx7svrCpmxxtHBq5j2mp/xVjsi8hQMfNLvJFAlrGgU=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/grandcat/zeroconf v1.0.0/go.mod h1:lTKmG1zh86XyCoUeIHSA4FJMBwCJiQmGfcP2PdzytEs=
